@@ -1,0 +1,81 @@
+Graph view parameters
+In graph tag:
+
+    string: title of the graph
+
+    stacked: if bar chart is stacked/not stacked (default=false)
+
+    type: mode (pivot, bar, pie, line) (default=bar). This parameter determines the mode in which the graph view will be when it loads.
+
+The type attribute:
+
+The graph tag can contain a number of field subtags. These fields should have a name attribute (corresponding to the name of a field in the corresponding model). The other main attribute is type. Here are its possible values:
+
+    row : the field will be grouped by rows (dimension)
+
+    col : the field will be grouped by cols (dimension)
+
+    measure : the field will be aggregated
+
+    if no type, measure by default
+
+The order is important: for example if two fields are grouped by row, then the first one that appears in the xml description will be the first one used to group, and the second will be used as a way to define sub groups.
+Date/datetime
+
+Dates and datetimes are always a little tricky. There is a special syntax for grouping them by intervals.
+
+    field_date:day,
+
+    field_date:week,
+
+    field_date:month (default)
+
+    field_date:quarter,
+
+    field_date:year
+
+Example:
+
+<graph string="Leads Analysis" type="pivot" stacked="True">
+    <field name="date_deadline:week" type="row"/>
+    <field name="stage_id" type="col"/>
+    <field name="planned_revenue" type="measure"/>
+</graph>
+
+
+Example:
+
+Here is an example of a graph view defined for the model crm.lead.report. It will open in pivot table mode. If it is switched to bar chart mode, the bars will be stacked. The data will be grouped according to the date_deadline field in rows, and the columns will be the various stages of an opportunity. Also, the planned_revenue field will be used as a measure.
+
+<record id="..." model="ir.ui.view">
+    <field name="name">crm.opportunity.report.graph</field>
+    <field name="model">crm.lead.report</field>
+    <field name="arch" type="xml">
+        <graph string="Leads Analysis" type="pivot" stacked="True">
+            <field name="date_deadline" type="row"/>
+            <field name="stage_id" type="col"/>
+            <field name="planned_revenue" type="measure"/>
+        </graph>
+    </field>
+</record>
+
+Note: the old graph view syntax still works (for example, operator="+"), but it is a good idea to use the new syntax whenever possible.
+Graph view architecture
+Overview
+
+The general design of the graph view is quite simple. It is basically a javascript addon, so it lives in the client. When it needs data from the model, it makes an async request to the server (only read_group calls), and displays the result as soon as it gets it.
+
+So, it means that the aggregation is done by the database (hence the constraint that functional fields need to be stored).
+
+Also, note that it is basically lazy: it only request the data that it needs. For example, if you drill down in a pivot table, it will only request the data corresponding to the subgroups.
+Graph view
+
+The graph view (addon web_graph) is actually made out of three parts:
+
+    pivot table: this is the part that keeps the data in memory and takes care of calling the ORM with ajax calls.
+
+    graph widget: this is a normal Odoo widget that takes care of displaying the data (the graph view is actually managed by a large widget) and interacting with the user
+
+    graph view: its task is to interact with the web client. So, basically, it only needs to instantiate a graph widget, and communicating both ways with the search view and the widget.
+
+Because of that design, it is possible (for example, in a client action) to display only a widget without the graph view. The widget has the full power of a normal graph view.
