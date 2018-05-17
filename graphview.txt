@@ -1,3 +1,64 @@
+The graph view gives a way to look at your data and to visualize it in various ways. Currently, it supports four main modes:
+
+    pivot: it is probably the most important mode. It is a multidimensional table that you can configure to display any possible cube for your data.
+
+    bar: displays a bar chart
+
+    pie: displays a pie chart
+
+    line: displays a line chart
+
+The basic idea is that you can work in pivot table mode to select the desired dimensions, use the search bar to select appropriate filters, and switch to various chart modes when your data is ready.
+
+Note: the technical name for the graph view is web_graph.
+
+
+
+Fields: measures and dimensions
+
+To do its work, the graph view understands two kind of fields:
+
+    measure: a measure is a field that can be aggregated (right now, the only aggregation method is the sum). Every field of type integer or float (except the id field) can be used as a measure.
+
+    dimension: A dimension is a field that can be grouped. That means pretty much every non numeric fields.
+
+When loading, the graph view reads the list of fields from the model. The measures are then obtained from that list. The dimensions are right now obtained from the Group By filters category defined in the search bar, but in a later release, the dimensions will be every groupable fields in the model.
+
+Note: it is important to note that the fields value are obtained with the read_group method in the ORM. It means that it directly reads from the database, and can not evaluate non-stored functional fields. If you want to use functional fields as measure or dimension, make sure to store them in the database (with the stored=true attribute)
+
+
+
+Adding a Graph View
+
+In general, the process to add a graph view is:
+
+    register a graph view in a xml file. For example, this code registers a graph view for the model project.task. The graph tag is where the graph view default parameters are defined. These parameters will be explained in the next section.
+
+<record id="view_project_task_graph" model="ir.ui.view">
+    <field name="name">project.task.graph</field>
+    <field name="model">project.task</field>
+    <field name="arch" type="xml">
+        <graph string="Project Tasks" type="bar">
+            <field name="project_id" type="row"/>
+            <field name="planned_hours" type="measure"/>
+        </graph>
+    </field>
+</record>
+
+    Add the graph view to an action (of course, if there is no action yet, an action has to be created as well). In this example, the graph value in the view_mode field is where the web client will see that a graph view as to be created when the action action_view_task is triggered.
+
+<record id="action_view_task" model="ir.actions.act_window">
+    ...
+    <field name="view_mode">kanban,tree,form,calendar,gantt,graph</field>
+    ...
+
+    If necessary, force the correct view with its id. The way the client operates is quite simple: it will pick the lowest priority available view for a given model. If this behaviour is not what you need, you can force it with the view_id field:
+
+<field name="view_id" ref="view_project_task_graph"/>
+
+
+
+
 Graph view parameters
 In graph tag:
 
@@ -60,6 +121,10 @@ Here is an example of a graph view defined for the model crm.lead.report. It wil
 </record>
 
 Note: the old graph view syntax still works (for example, operator="+"), but it is a good idea to use the new syntax whenever possible.
+
+
+
+
 Graph view architecture
 Overview
 
