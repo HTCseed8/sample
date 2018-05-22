@@ -1,0 +1,17 @@
+>>> import inflect
+>>> p=inflet.engine
+Traceback (most recent call last):
+  File "<pyshell#1>", line 1, in <module>
+    p=inflet.engine
+NameError: name 'inflet' is not defined
+>>> p=inflect.engine()
+>>> words=p.numer_to_words(p.ordinal(123456789))
+Traceback (most recent call last):
+  File "<pyshell#3>", line 1, in <module>
+    words=p.numer_to_words(p.ordinal(123456789))
+  File "C:\Program Files\Python36\lib\site-packages\inflect.py", line 1217, in __getattr__
+    raise AttributeError
+AttributeError
+>>> words=p.number_to_words(p.ordinal(123456789))
+>>> print(words)
+one hundred and twenty-three million, four hundred and fifty-six thousand, seven hundred and eighty-ninth
