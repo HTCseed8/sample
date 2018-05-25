@@ -1,0 +1,54 @@
+1. dbfilter:
+
+> Odoo is a multi-tenant system: a single Odoo system may run and serve a number of database instances. 
+> It is also highly customizable, with customizations (starting from the modules being loaded) depending on the "current database".
+> This is not an issue when working with the backend (web client) as a logged-in company user: the database can be selected when logging in, and customizations loaded afterwards.
+> However it is an issue for non-logged users (portal, website) which aren't bound to a database: Odoo need to know which database should be used for the operations or to get the data. 
+> If multi-tenancy is not used that is not an issue, there's only one database to use, but if there are multiple databases accessible Odoo needs a rule to know which one it should use.
+> That is one of the purposes of :option:`--db-filter <odoo.py --db-filter>`: it specifies the default database for the Odoo system. 
+> The value is a regular expression, possibly including the dynamically injected hostname or subdomain through which the Odoo system is accessed.
+> If an Odoo hosts multiple databases in production, especially if website is used, it must use a dbfilter or a number of features will not work correctly or not use at all.
+> Odoo includes built-in HTTP servers, using either multithreading or multiprocessing.
+
+    For production use, it is recommended to use the multiprocessing server as it increases stability, makes somewhat better use of computing resources and can be better monitored and resource-restricted.
+
+    Multiprocessing is enabled by configuring :option:a non-zero number
+      of worker processes <odoo.py --workers>, the number of workers should be based on the number of cores in the machine (possibly with some room for cron workers depending on how much cron work is predicted) Worker limits can be configured based on the hardware configuration to avoid resources exhaustion Warning
+
+    Note: Multiprocessing mode currently isn't available on Windows
+
+> Number of workers and how to configure it :
+
+    You should use 2 worker threads + 1 cron thread per available CPU, and 1 CPU per 10 concurent users. 
+	Make sure you tune the memory limits and cpu limits in your configuration file.
+
+                     workers = --workers <count>
+
+    If count is not 0 (the default), enables multiprocessing and sets up the specified number of HTTP workers (sub-processes processing HTTP and RPC requests).
+
+    A number of options allow limiting and recyling workers:
+
+    --limit-request <limit>
+
+        Number of requests a worker will process before being recycled and restarted. Defaults to 8196.
+
+    --limit-memory-soft <limit>
+
+        Maximum allowed virtual memory per worker. If the limit is exceeded, the worker is killed and recycled at the end of the current request. Defaults to 640MB.
+
+    --limit-memory-hard <limit>
+
+        Hard limit on virtual memory, any worker exceeding the limit will be immediately killed without waiting for the end of the current request processing. Defaults to 768MB.
+
+    --limit-time-cpu <limit>
+
+        Prevents the worker from using more than CPU seconds for each request. If the limit is exceeded, the worker is killed. Defaults to 60.
+		
+	--limit-time-real <limit>
+
+        Prevents the worker from taking longer than seconds to process a request. If the limit is exceeded, the worker is killed. Defaults to 120.
+        Differs from --limit-time-cpu in that this is a "wall time" limit including e.g. SQL queries.
+
+    --max-cron-threads <count>
+
+        number of workers dedicated to cron jobs. Defaults to 2. The workers are threads in multithreading mode and processes in multiprocessing mode.
