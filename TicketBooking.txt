@@ -1,0 +1,5 @@
+create table seats(routname varchar(30),seatnumber integer)
+drop table seats
+insert into seats values('Durgapur',10)
+insert into seats values('Barasat',6)
+select * from seats
