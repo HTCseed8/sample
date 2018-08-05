@@ -1,0 +1,11 @@
+select * from employee
+delete empid from employee where empid='null'
+
+drop table employee
+
+create table employee (empid varchar(30),empname varchar(30),empmail varchar(30),password varchar(30))
+insert into employee values('22067','Suman','sumanchatterjee@htcindia.com','S@123')
+Select * from employee
+create table ed(empid varchar(30),empname varchar(30))
+drop table ed
+select * from ed
